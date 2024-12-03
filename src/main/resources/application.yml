@@ -1,0 +1,8 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://user:password@localhost:27017/miniautorizador
+      database: miniautorizador
+      authentication-database: admin
+      username: user
+      password: password
