@@ -1,8 +1,12 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://user:password@localhost:27017/miniautorizador
+      uri: mongodb://user:password@localhost:27017/miniautorizador?authSource=admin
       database: miniautorizador
-      authentication-database: admin
       username: user
       password: password
+
+authentication:
+  basic:
+    user: vrbeneficio
+    password: password

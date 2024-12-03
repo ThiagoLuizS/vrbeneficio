@@ -8,19 +8,20 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 @Slf4j
 public abstract class AbstractService<T, View, Form> {
 
-    protected abstract MongoRepository<T, View> getRepository();
+    protected abstract MongoRepository<T, String> getRepository();
     protected abstract MapStructMapper<T, View, Form> getMapper();
 
-    public View saveToView(T entity) {
+    public View saveToView(Form form) {
         try {
-            log.debug(">> save [entity={}] ", entity);
-            T t = getRepository().save(entity);
-            log.debug("<< save [t={}] ", t);
+            log.info(">> SALVAR [form={}] ", form);
+            T t = getMapper().formToEntity(form);
+            t = getRepository().save(t);
+            log.info("<< SALVAR [t={}] ", t);
             View view =  getMapper().entityToView(t);
-            log.debug("<< save [view={}] ", view);
+            log.info("<< SALVAR [view={}] ", view);
             return view;
         } catch (Exception e) {
-            log.error("<< save [error={}]", e.getMessage(), e);
+            log.error("<< SALVAR [error={}]", e.getMessage(), e);
             throw new GlobalException(e.getMessage());
         }
     }
