@@ -14,7 +14,13 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -27,16 +33,47 @@ public class TransacaoServiceImpl implements ITransacaoService {
     public Cartao transacao(TransacaoForm transacaoForm) {
         try {
             log.info(">> TRANSAÇÃO [transacaoForm={}]", transacaoForm);
-            Cartao cartao = cartaoService.findByNumeroCartao(transacaoForm.getNumeroCartao());
 
-            /*VALIDAR INFORMAÇÕES DO CARTÂO*/
-            validarCartao(cartao, transacaoForm);
+            Queue<Runnable> taskQueue = new LinkedList<>();
+            /*Executor de uma única thread para garantir que as tarefas sejam executadas uma por vez*/
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-            /*ABATER SALDO DO CARTÃO*/
-            BigDecimal valor = transacaoForm.getValor().abs();
-            cartao.setSaldo(cartao.getSaldo().subtract(valor));
+            AtomicReference<Cartao> cartao = new AtomicReference<>(Cartao.builder().build());
+            taskQueue.add(() -> {
+                log.info(">> TRANSAÇÃO [buscando cartão]");
+                cartao.set(cartaoService.findByNumeroCartao(transacaoForm.getNumeroCartao()));
+            });
 
-            return cartaoService.salvarToEntity(cartao);
+            taskQueue.add(() -> {
+               log.info(">> TRANSAÇÃO [validando cartão]");
+                validarCartao(cartao.get(), transacaoForm);
+            });
+
+            taskQueue.add(() -> {
+                log.info(">> TRANSAÇÃO [abatendo saldo cartão]");
+                BigDecimal valor = transacaoForm.getValor().abs();
+                cartao.get().setSaldo(cartao.get().getSaldo().subtract(valor));
+            });
+
+            CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+
+            while (!taskQueue.isEmpty()) {
+                Runnable task = taskQueue.poll();
+
+                log.info("<< TRANSACAO [task={}]", task);
+
+                if (task != null) {
+                    future = future.thenRunAsync(task, executorService);
+                }
+            }
+
+            /* Aguarda a conclusão de todas as tarefas */
+            future.join();
+
+            /* Encerra o ExecutorService */
+            executorService.shutdown();
+
+            return cartaoService.salvarToEntity(cartao.get());
         } catch (OptimisticLockingFailureException ex) {
             log.error("<< TRANSAÇÃO [transacao={}]", transacaoForm, ex);
             throw new GlobalException("Existe outra transação em andamento. Tente novamente!");
