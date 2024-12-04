@@ -22,7 +22,7 @@ public class CartaoForm {
     @NotNull(message = "Numero do cartão obrigatório")
     private Long numeroCartao;
     @NotEmpty(message = "Senha do cartão obrigatório")
-    @Size(min = 4, max = 8, message = "Informe a senha com no minimo 4 caracteres e 8 no máximo.")
+    @Size(min = 4, max = 10, message = "Informe a senha com no minimo 4 caracteres e 8 no máximo.")
     private String senha;
     @JsonIgnore
     private BigDecimal saldo = BigDecimal.valueOf(500);
