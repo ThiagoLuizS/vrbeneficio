@@ -30,7 +30,6 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
     private static final HttpStatus HTTP_STATUS_BAD_REQUEST = HttpStatus.BAD_REQUEST;
     private static final HttpStatus HTTP_STATUS_UNPROCESSABLE_ENTITY = HttpStatus.UNPROCESSABLE_ENTITY;
 
-
     @ExceptionHandler({GlobalException.class})
     @ResponseStatus(code = HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleGlobalException(
@@ -51,6 +50,17 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         String error = ex.getMessage();
 
         return handleExceptionInternal(ex, error, new HttpHeaders(), HTTP_STATUS_UNPROCESSABLE_ENTITY, request);
+    }
+
+    @ExceptionHandler({NotFoundCustomException.class})
+    @ResponseStatus(code = HttpStatus.NOT_FOUND)
+    public ResponseEntity<Object> handleNotFoundCustomException(
+            NotFoundCustomException ex,
+            WebRequest request) {
+
+        String error = ex.getMessage();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), HTTP_STATUS_NOT_FOUND, request);
     }
 
     @ExceptionHandler({InvalidDataAccessApiUsageException.class})

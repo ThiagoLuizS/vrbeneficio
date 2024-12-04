@@ -70,7 +70,6 @@ public class TransacaoControllerTest extends AbstractControllerTest{
 
         Cartao cartao = Cartao.builder().numeroCartao(12345678L).senha("123456789").build();
 
-
         Mockito.when(cartaoService.findByNumeroCartao(transacao.getNumeroCartao())).thenReturn(cartao);
         Mockito.when(transacaoService.transacao(transacao)).thenReturn(cartao);
 
