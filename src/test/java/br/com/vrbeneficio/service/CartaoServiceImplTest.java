@@ -51,10 +51,10 @@ public class CartaoServiceImplTest {
         Cartao cartao = Cartao.builder().numeroCartao(123456778L).senha("1234").build();
         CartaoView cartaoView = CartaoView.builder().numeroCartao(123456778L).senha("1234").build();
 
-        Mockito.when(cartaoRepository.findByNumeroCartao(Mockito.any(Long.class))).thenReturn(Optional.ofNullable(cartao));
+        Mockito.when(cartaoRepository.findByNumeroCartao(Mockito.any(Long.class))).thenReturn(cartao);
         Mockito.when(cartaoMapper.entityToView(Mockito.any(Cartao.class))).thenReturn(cartaoView);
 
-        cartaoService.findByNumeroCartao(cartaoForm.getNumeroCartao());
+        cartaoService.findByNumeroCartaoToView(cartaoForm.getNumeroCartao());
 
         Mockito.verify(cartaoRepository).findByNumeroCartao(Mockito.any(Long.class));
     }

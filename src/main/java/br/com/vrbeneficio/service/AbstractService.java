@@ -25,4 +25,16 @@ public abstract class AbstractService<T, View, Form> {
             throw new GlobalException(e.getMessage());
         }
     }
+
+    public T saveToEntity(T entity) {
+        try {
+            log.info(">> SALVAR [entity={}] ", entity);
+            entity = getRepository().save(entity);
+            log.info("<< SALVAR [entity={}] ", entity);
+            return entity;
+        } catch (Exception e) {
+            log.error("<< SALVAR [error={}]", e.getMessage(), e);
+            throw new GlobalException(e.getMessage());
+        }
+    }
 }

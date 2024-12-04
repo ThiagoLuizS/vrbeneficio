@@ -28,6 +28,7 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
 
     private static final HttpStatus HTTP_STATUS_NOT_FOUND = HttpStatus.NOT_FOUND;
     private static final HttpStatus HTTP_STATUS_BAD_REQUEST = HttpStatus.BAD_REQUEST;
+    private static final HttpStatus HTTP_STATUS_UNPROCESSABLE_ENTITY = HttpStatus.UNPROCESSABLE_ENTITY;
 
 
     @ExceptionHandler({GlobalException.class})
@@ -39,6 +40,17 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         ErrorView error = criarListaDeErros(ex.getMessage(), HTTP_STATUS_NOT_FOUND);
 
         return handleExceptionInternal(ex, error, new HttpHeaders(), HTTP_STATUS_NOT_FOUND, request);
+    }
+
+    @ExceptionHandler({ValidarCartaoException.class})
+    @ResponseStatus(code = HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<Object> handleValidarCartaoException(
+            ValidarCartaoException ex,
+            WebRequest request) {
+
+        String error = ex.getMessage();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), HTTP_STATUS_UNPROCESSABLE_ENTITY, request);
     }
 
     @ExceptionHandler({InvalidDataAccessApiUsageException.class})

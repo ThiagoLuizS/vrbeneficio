@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -30,9 +29,18 @@ public class CartaoServiceImpl extends AbstractService<Cartao, CartaoView, Carta
     }
 
     @Override
-    public Optional<CartaoView> findByNumeroCartao(Long numeroCartao) {
-        return cartaoRepository.findByNumeroCartao(numeroCartao)
+    public Cartao salvarToEntity(Cartao cartao) {
+        return saveToEntity(cartao);
+    }
+
+    @Override
+    public Optional<CartaoView> findByNumeroCartaoToView(Long numeroCartao) {
+        return Optional.ofNullable(findByNumeroCartao(numeroCartao))
                 .map(cartao -> getMapper().entityToView(cartao));
+    }
+
+    public Cartao findByNumeroCartao(Long numeroCartao) {
+        return cartaoRepository.findByNumeroCartao(numeroCartao);
     }
 
     @Override
