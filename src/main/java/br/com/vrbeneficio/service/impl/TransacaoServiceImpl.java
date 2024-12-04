@@ -1,5 +1,6 @@
 package br.com.vrbeneficio.service.impl;
 
+import br.com.vrbeneficio.exception.GlobalException;
 import br.com.vrbeneficio.exception.ValidarCartaoException;
 import br.com.vrbeneficio.models.collection.Cartao;
 import br.com.vrbeneficio.models.dto.form.TransacaoForm;
@@ -9,6 +10,7 @@ import br.com.vrbeneficio.service.ITransacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -23,16 +25,22 @@ public class TransacaoServiceImpl implements ITransacaoService {
 
     @Override
     public Cartao transacao(TransacaoForm transacaoForm) {
-        Cartao cartao = cartaoService.findByNumeroCartao(transacaoForm.getNumeroCartao());
+        try {
+            log.info(">> TRANSAÇÃO [transacaoForm={}]", transacaoForm);
+            Cartao cartao = cartaoService.findByNumeroCartao(transacaoForm.getNumeroCartao());
 
-        /*VALIDAR INFORMAÇÕES DO CARTÂO*/
-        validarCartao(cartao, transacaoForm);
+            /*VALIDAR INFORMAÇÕES DO CARTÂO*/
+            validarCartao(cartao, transacaoForm);
 
-        /*ABATER SALDO DO CARTÃO*/
-        BigDecimal valor = transacaoForm.getValor().abs();
-        cartao.setSaldo(cartao.getSaldo().subtract(valor));
+            /*ABATER SALDO DO CARTÃO*/
+            BigDecimal valor = transacaoForm.getValor().abs();
+            cartao.setSaldo(cartao.getSaldo().subtract(valor));
 
-        return cartaoService.salvarToEntity(cartao);
+            return cartaoService.salvarToEntity(cartao);
+        } catch (OptimisticLockingFailureException ex) {
+            log.error("<< TRANSAÇÃO [transacao={}]", transacaoForm, ex);
+            throw new GlobalException("Existe outra transação em andamento. Tente novamente!");
+        }
     }
 
     @Override

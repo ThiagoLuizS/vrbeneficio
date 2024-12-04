@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -20,4 +21,7 @@ public class Cartao {
     private Long numeroCartao;
     private String senha;
     private BigDecimal saldo;
+
+    @Version
+    private String version;
 }

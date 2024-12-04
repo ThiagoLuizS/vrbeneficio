@@ -3,13 +3,22 @@ package br.com.vrbeneficio.service;
 import br.com.vrbeneficio.exception.ValidarCartaoException;
 import br.com.vrbeneficio.models.collection.Cartao;
 import br.com.vrbeneficio.models.dto.form.TransacaoForm;
+import br.com.vrbeneficio.models.dto.view.CartaoView;
 import br.com.vrbeneficio.models.enums.MensagemCartaoEnum;
+import br.com.vrbeneficio.repository.CartaoRepository;
+import br.com.vrbeneficio.service.impl.CartaoServiceImpl;
 import br.com.vrbeneficio.service.impl.TransacaoServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
