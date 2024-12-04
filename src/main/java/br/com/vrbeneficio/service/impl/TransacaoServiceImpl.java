@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -55,29 +56,33 @@ public class TransacaoServiceImpl implements ITransacaoService {
                 cartao.get().setSaldo(cartao.get().getSaldo().subtract(valor));
             });
 
-            CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-
-            while (!taskQueue.isEmpty()) {
-                Runnable task = taskQueue.poll();
-
-                log.info("<< TRANSACAO [task={}]", task);
-
-                if (task != null) {
-                    future = future.thenRunAsync(task, executorService);
-                }
-            }
-
-            /* Aguarda a conclusão de todas as tarefas */
-            future.join();
-
-            /* Encerra o ExecutorService */
-            executorService.shutdown();
+            completableFutureTask(taskQueue, executorService);
 
             return cartaoService.salvarToEntity(cartao.get());
         } catch (OptimisticLockingFailureException ex) {
             log.error("<< TRANSAÇÃO [transacao={}]", transacaoForm, ex);
             throw new GlobalException("Existe outra transação em andamento. Tente novamente!");
         }
+    }
+
+    private static void completableFutureTask(Queue<Runnable> taskQueue, ExecutorService executorService) {
+        CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
+
+        while (!taskQueue.isEmpty()) {
+            Runnable task = taskQueue.poll();
+
+            log.info("<< TRANSACAO [task={}]", task);
+
+            if (Objects.nonNull(task)) {
+                future = future.thenRunAsync(task, executorService);
+            }
+        }
+
+        /* Aguarda a conclusão de todas as tarefas */
+        future.join();
+
+        /* Encerra o ExecutorService */
+        executorService.shutdown();
     }
 
     @Override
